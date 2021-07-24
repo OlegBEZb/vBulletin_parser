@@ -22,7 +22,7 @@ class TwoStepExtractor(VbulletinExtractor):
     @staticmethod
     def _get_topic_pages_num_from_subsection(topic):
         last_page_tag = topic.find("a", title=lambda title: title and title.startswith("Перейти"))
-        logger.debug('last_page_tag', last_page_tag)
+        logger.debug(f"last_page_tag: {str(last_page_tag)}")
         if last_page_tag is not None:  # this may occur if there is no "go to specific page in preview"
             logger.debug('enough pages')
             return int(re.findall('стр. ([\d]*)', last_page_tag.attrs['title'])[0])
@@ -46,7 +46,7 @@ class TwoStepExtractor(VbulletinExtractor):
 
         subsection_pages = min(subsection_pages, self._get_pages_num(thread_soup=soup))
         for subsection_page in tqdm(range(1, subsection_pages + 1), total=subsection_pages):
-            logger.debug(f'\n\n{subsection_page} page in subsection')
+            logger.debug(f"{subsection_page} page in subsection")
             topics = soup.find('ol', {'id': 'threads'}).find_all('li', {'class': re.compile('threadbit hot *')})
             for topic in topics:
                 # print('\n', '~' * 80)
@@ -57,7 +57,7 @@ class TwoStepExtractor(VbulletinExtractor):
                 href = topic.find('a', href=True).attrs['href']
                 # print('href', href)
                 topic_num = re.findall('\d{7}', href)[0]
-                logger.info("topic_num: ", topic_num, "topic name: ", topic_name, "pages:", pages)
+                logger.info(f"topic_num: {str(topic_num)}, topic name: {topic_name}, pages: {str(pages)}")
 
                 topic_local_dir = os.path.join(self.raw_data_path, str(topic_num))
                 # extract a function
