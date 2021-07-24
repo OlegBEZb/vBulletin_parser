@@ -24,18 +24,21 @@ class VbulletinExtractor:
     def __init__(self, forum):
         self.forum = forum
 
+    @staticmethod
     def _get_posts_from_page(soup):
         posts_ol = soup.find('ol', {'id': 'posts'})
         assert posts_ol is not None, 'Posts not found on page. Soup:\n{}'.format(soup)
         return posts_ol.find_all('li', {'class': 'postbitlegacy postbitim postcontainer old'})
 
+    @staticmethod
     def _get_post_text(post):
         return post.find('div', 'postdetails').find('div', 'content').find('blockquote', 'postcontent restore').text
 
-    def get_post_texts_from_page(self, soup):
-        posts = self._get_posts_from_page(soup)
-        return [self._get_post_text(post) for post in posts]
+    # def get_post_texts_from_page(self, soup):
+    #     posts = self._get_posts_from_page(soup)
+    #     return [self._get_post_text(post) for post in posts]
 
+    @staticmethod
     def _get_user_extra_info(post):
         extra_info = post.find('dl', {'class': 'userinfo_extra'})
         # print('extra_info', extra_info)
@@ -52,7 +55,7 @@ class VbulletinExtractor:
             info_dict.update({'guest': False})
             return info_dict
 
-    def get_user_info_from_post(self, post):
+    def _get_user_info_from_post(self, post):
         user_info = dict()
         user_info['user_title'] = post.find('span', {'class': 'usertitle'}).text
         try:
@@ -68,6 +71,7 @@ class VbulletinExtractor:
         user_info.update(self._get_user_extra_info(post))
         return user_info
 
+    @staticmethod
     def _parse_date(date_string, file_path=None):
         try:
             return parse(date_string, dayfirst=True)
@@ -144,10 +148,11 @@ class VbulletinExtractor:
     def get_all_info_from_file(self, file_path):
         with open(file_path, 'r') as f:
             contents = f.read()
-            soup = BeautifulSoup(contents)
+            soup = BeautifulSoup(contents, features="lxml")
             all_info_from_page = self.get_all_info_from_page(soup, file_path)
             return all_info_from_page
 
+    @staticmethod
     def _get_save_freq(n_pages):
         if n_pages < 1000:
             return 500
@@ -175,6 +180,6 @@ class VbulletinExtractor:
 
         return top_n_pages
 
-    def _get_user_info_from_page(self, soup):
-        posts = self._get_posts_from_page(soup)
-        return [self._get_user_info_from_post(post) for post in posts]
+    # def _get_user_info_from_page(self, soup):
+    #     posts = self._get_posts_from_page(soup)
+    #     return [self._get_user_info_from_post(post) for post in posts]

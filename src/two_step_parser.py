@@ -1,14 +1,15 @@
+import logging
+import os
+import re
+
+import pandas as pd
 import wget
 from tqdm import tqdm
-import re, os
-import pandas as pd
 
 from .selenium_utils import *
 from .vbulletin_utils import VbulletinExtractor
-
 from .vbulletin_utils import driver2soup
 
-import logging
 logger = logging.getLogger(__name__)
 print("two_step_parser.py logger name: {}".format(__name__))
 
@@ -55,7 +56,6 @@ class TwoStepExtractor(VbulletinExtractor):
 
                 topic_name = topic.find('a', 'title').text
                 href = topic.find('a', href=True).attrs['href']
-                # print('href', href)
                 topic_num = re.findall('\d{7}', href)[0]
                 logger.info(f"topic_num: {str(topic_num)}, topic name: {topic_name}, pages: {str(pages)}")
 
@@ -81,10 +81,10 @@ class TwoStepExtractor(VbulletinExtractor):
         driver.close()
 
     def process_thread(self,
-                       thread_num,
+                       thread_num: str,
                        return_df=False):
         result_df = pd.DataFrame()
-        logger.info('thread_num', thread_num)
+        logger.info(f"thread_num {thread_num}")
 
         if any('Thread_' + thread_num in s for s in os.listdir(self.target_file_path)):
             logger.debug('already processed')
@@ -99,7 +99,17 @@ class TwoStepExtractor(VbulletinExtractor):
             result_df.to_csv(os.path.join(self.target_file_path, 'Thread_' + thread_num + \
                                           '_full_{}_pages.csv'.format(len(pages))),
                              index=False)
+        logger.info("successfully processed")
         if return_df:
             return result_df
         else:
             return 1
+
+    def process_subsection(self):
+        if not os.path.exists(self.target_file_path):
+            os.makedirs(self.target_file_path)
+        else:
+            logger.info(f"{self.target_file_path} already exists")
+
+        for thread_num in os.listdir(self.raw_data_path):
+            self.process_thread(thread_num)

@@ -2,3 +2,5 @@ src/__pycache__/*
 .ipynb_checkpoints/*
 .idea/*
 chromedriver.exe
+credentials.py
+__pycache__/

@@ -6,11 +6,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import \
     staleness_of
 from selenium import webdriver
+from selenium.webdriver.chrome.webdriver import WebDriver as WebDriverClass
 from selenium.webdriver.chrome.options import Options
 
 from contextlib import contextmanager
 
 from .vbulletin_utils import driver2soup
+
+from credentials import username, password
+
+import imgkit
 
 
 def read_html_with_webdriver(url_to_read, wait_sec=7, headless=True,
@@ -47,7 +52,7 @@ def wait_for_page_load(driver, timeout=30):
                   poll_frequency=0.1).until(staleness_of(old_page))
 
 
-def move_to_next_page(driver):
+def move_to_next_page(driver: WebDriverClass):
     # print('moving from page', driver.find_element_by_tag_name('html').id)
     try:
         with wait_for_page_load(driver):
@@ -56,3 +61,21 @@ def move_to_next_page(driver):
     except Exception as e:
         print('Unable to get next page')
         print(e)
+        try:
+            log_in(driver)
+        except Exception as e:
+            print('Unable to get next page')
+            print(e)
+
+
+def log_in(driver: WebDriverClass, wait_sec=7):
+    # print('trying to log_in\n', driver2soup(driver))
+    try:
+        with wait_for_page_load(driver):
+            driver.find_element_by_id('navbar_username').send_keys(username)
+            driver.find_element_by_id('navbar_password_hint').send_keys(password)
+            driver.find_element_by_class_name('loginbutton').click()
+            time.sleep(wait_sec)
+    except Exception as e:
+        print('Unable to log in')
+        raise
